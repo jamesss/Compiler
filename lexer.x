@@ -79,7 +79,7 @@ data Token =
    ContainedA   |
    SaidAlice    |
    Perhaps  |
-   AliceWasUSW  |
+   AliceUnsureW  |
    Had  |
    EnoughTimes  |
    Eventually   |
