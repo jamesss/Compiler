@@ -16,3 +16,4 @@ clean:
 	rm lexer.hs
 	rm parser.hs
 	rm *.hi
+	rm lexer
