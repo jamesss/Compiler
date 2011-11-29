@@ -53,21 +53,31 @@ import Lexer
 
 %%
 
+program : stat { $1 }
+        | program { $1 }
+
+stat    : strings { $1 }
+        | declare { $1 }
+
 strings :: { String }
         : string { $1 }
 
-madeup :: { Exp }
-       : afound sep        { Lint 2 }
-       | tsentence          { Lint 3 }
-       | afound            { Lint 2 }
+declare :: { Statement }
+        : id wasa mtype sep { Declare $3 $1 }
+        | id became exp sep { Assign $3 $1 }
 
-declare :: { Decl }
-        : id wasa mtype sep { $1 $3 }
 
-mtype    :: { MType }
-        : tletter   { MLett }
-        | tnumber   { MNum }
+mtype   :: { MType }
+        : tletter { MLett }
+        | tnumber { MNum }
         | tsentence { MSent }
+
+incdec :: { Statement }
+       : id ate sep { Decr $1 }
+       | id drank sep { Incr $1 } 
+
+exp :: { Exp }
+    : integer { $1 }
 
 {
 
@@ -75,13 +85,25 @@ data MType
     = MSent | MLett | MNum
     deriving (Eq,Show)
 
-data Exp
-    = Lint Int
-    deriving (Eq,Show)
+data AST
+    = Program [Statement]
+    deriving (Show, Eq)
 
-data Decl
-    = Token MType
-    deriving (Eq,Show)
+data Statement
+    = Assign String Exp
+    | Declare MType String
+    | Decr String
+    | Incr String
+    | Return Exp
+    deriving (Show, Eq) 
+
+data Exp
+    = UnOp Char Exp
+    | BinOpr Char Exp Exp
+    | Int Int
+    | Char Char
+    | Var String
+    deriving (Show, Eq)
 
 parseError :: [Token] -> a
 parseError _ = error "Parser Error!"
