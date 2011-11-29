@@ -13,7 +13,7 @@ $white+                     ;
 
 [0-9]+                      { \s -> LInt (read s) }
 [\'][^\t\n][\']             { \s -> LChar (s!!1) }
-[\"][^\t\n]*[\"]            { \s -> LString s }
+[\"][^\t\n]*[\"]            { \s -> LString (drop 1 (take ((length s)-1) s)) }
 
 Alice\ found                { \s -> AliceFound }
 Alice\ was\ unsure\ which.  { \s -> AliceUnsureW }

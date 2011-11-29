@@ -15,7 +15,7 @@ import Lexer
     sentence  { Sentence }
     afound    { AliceFound }
     spoke     { Spoke }
-    
+    string    { LString $$ }
 
 %%
 
@@ -25,7 +25,8 @@ madeup :: { Exp }
        | sentence          { Lint 3 }
        | afound            { Lint 2 }
 
-
+strings :: { String }
+        : string { $1 }
 
 {
 
