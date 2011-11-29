@@ -19,14 +19,13 @@ import Lexer
 
 %%
 
+strings :: { String }
+        : string { $1 }
 
 madeup :: { Exp }
        : afound sep        { Lint 2 }
        | sentence          { Lint 3 }
        | afound            { Lint 2 }
-
-strings :: { String }
-        : string { $1 }
 
 {
 
