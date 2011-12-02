@@ -43,6 +43,8 @@ was                         { \s -> Was }
 piece                       { \s -> Piece }
 \?                          { \s -> QMark }
 \'s                         { \s -> ICommaS }
+so                          { \s -> So }
+or\ maybe                   { \s -> OrMaybe }
 
 [\%\+\^\*\&\/\-\|\>\<]|={2}|\<=|\>=    { \s -> BinOp (head s) }
 
@@ -90,7 +92,9 @@ data Token =
    Piece    |
    QMark    |
    ICommaS  |
-   AliceUnsure
+   AliceUnsure |
+  So |
+  OrMaybe
    deriving (Eq,Show)
 
 }
