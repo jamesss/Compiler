@@ -43,6 +43,8 @@ import Lexer
     piece     { Piece }
     qm        { QMark }
     cs        { ICommaS }
+    so        { So }
+    ormaybe   { OrMaybe }
 
     bin       { BinOp $$ }
 
@@ -54,19 +56,24 @@ import Lexer
 %%
 
 program : stat { $1 }
-        | program { $1 }
+        | stat program { $1 }
 
 stat    : strings { $1 }
         | declare { $1 }
+        | assign { $1 }
+        | incdec { $1 }
 
-strings :: { String }
+literal :: { LVALUE }
         : string { $1 }
+        | integer { $1 }
+        | character { $1 }
 
 declare :: { Statement }
-        : id wasa mtype sep { Declare $3 $1 }
-        | id became exp sep { Assign $3 $1 }
-
-
+        : id wasa mtype sep { Declare $3 $1 } 
+        
+assign :: { XXXX }
+       : id became exp sep { Assign $3 $1 }
+        
 mtype   :: { MType }
         : tletter { MLett }
         | tnumber { MNum }
@@ -77,7 +84,32 @@ incdec :: { Statement }
        | id drank sep { Incr $1 } 
 
 exp :: { Exp }
-    : integer { $1 }
+    : binoperation { $1 }
+    | unoperation { $1 }
+    | literal { $1 }
+    | id { $1 }
+
+function :: { XXXXX }
+         : theroom obracket cond cbracket containeda mtype fstat afound exp { $1 }
+
+fstat :: { XXXXXX }
+      : stat fstat { $1 }
+      | stat { $1 }
+
+print :: { XXXXXX }
+      : id saida sep { $1 }
+      | literal saida sep { $1 }
+      | id spoke sep { $1 }
+
+readin :: { XXXXXX }
+       : whatwas id qmark { $1 }
+
+wnot :: { XXXXXX }
+     : eventually obracket cond cbracket because fsat enought sep { $1 }
+
+ifcond :: { XXXXXX }
+       : perhaps obracket cond cbracket so fstat aliceunsure
+       : perhaps obracket cond cbracket so fstat 
 
 {
 
