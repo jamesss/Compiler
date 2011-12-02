@@ -55,15 +55,11 @@ import Lexer
 
 %%
 
-program : stat { $1 }
+program :: { AST }
+        : stat { $1 }
         | stat program { $1 }
 
-stat    : strings { $1 }
-        | declare { $1 }
-        | assign { $1 }
-        | incdec { $1 }
-
-literal :: { LVALUE }
+literal :: { Exp }
         : string { $1 }
         | integer { $1 }
         | character { $1 }
@@ -71,7 +67,7 @@ literal :: { LVALUE }
 declare :: { Statement }
         : id wasa mtype sep { Declare $3 $1 } 
         
-assign :: { XXXX }
+assign :: { Statement }
        : id became exp sep { Assign $3 $1 }
         
 mtype   :: { MType }
@@ -92,24 +88,30 @@ exp :: { Exp }
 function :: { XXXXX }
          : theroom obracket cond cbracket containeda mtype fstat afound exp { $1 }
 
-fstat :: { XXXXXX }
+fstat :: { Statement }
       : stat fstat { $1 }
       | stat { $1 }
 
-print :: { XXXXXX }
+print :: { Statement }
       : id saida sep { $1 }
       | literal saida sep { $1 }
       | id spoke sep { $1 }
 
-readin :: { XXXXXX }
+readin :: { Statement }
        : whatwas id qmark { $1 }
 
-wnot :: { XXXXXX }
+wnot :: { WhileNot }
      : eventually obracket cond cbracket because fsat enought sep { $1 }
 
-ifcond :: { XXXXXX }
-       : perhaps obracket cond cbracket so fstat aliceunsure
-       : perhaps obracket cond cbracket so fstat 
+ifcond :: { Conditional }
+       : perhaps obracket cond cbracket so fstat aliceunsure { $1 }
+       : perhaps obracket cond cbracket so fstat { $1 }
+
+elses :: { AST }
+      : ormaybe obr cond cbr so fstat aliceunsurew { $1 }
+      | ormaybe obr cond cbr so fstat elses { $1 }
+
+
 
 {
 
@@ -127,7 +129,22 @@ data Statement
     | Decr String
     | Incr String
     | Return Exp
+    | Print Exp
+    | ReadIn String
+    | Conditional
+    | WhileNot
     deriving (Show, Eq) 
+
+data Conditional
+    = If BoolExp Then [Statement]
+    deriving (Show, Eq)
+
+data WhileNot
+    = While BoolExpr [Statement]
+    deriving (Show, Eq)
+
+data FunctionDecl
+    = MType Function String 
 
 data Exp
     = UnOp Char Exp
