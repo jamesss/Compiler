@@ -95,7 +95,7 @@ exp :: { Exp }
     | literal { $1 }
     | id { $1 }
 
-function :: { XXXXX }
+function :: { FunctionDecl }
          : theroom obr cond cbr contained mtype fstat afound exp { $1 }
 
 fstat :: { Statement }
@@ -150,10 +150,14 @@ data Statement
     | ReadIn String
     | Conditional
     | WhileNot
+    | FunctionDecl
+    | FunctionCall
     deriving (Show, Eq) 
 
 data Conditional
-    = If BoolExp Then [Statement]
+    = If BoolExpr [Statement]
+    | ElseIf BoolExpr [Statement]
+    | Else [Statement]
     deriving (Show, Eq)
 
 data WhileNot
@@ -161,7 +165,12 @@ data WhileNot
     deriving (Show, Eq)
 
 data FunctionDecl
-    = MType Function String 
+    = Function MType String [(String,MType)] [Statement]
+    deriving (Show, Eq)
+
+data FunctionCall
+    = Call String [Exp]
+    deriving (Show,Eq)
 
 data Exp
     = UnOpr Char Exp
@@ -172,9 +181,9 @@ data Exp
     deriving (Show, Eq)
 
 data BoolExpr
-    = True
-    | False
+    = Bool
     | Exp String Exp
+    deriving (Eq, Show)
 
 parseError :: [Token] -> a
 parseError _ = error "Parser Error!"
