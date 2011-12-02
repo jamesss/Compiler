@@ -2,6 +2,8 @@
 
 module Parser where
 import Lexer
+import Debug.Trace
+
 
 }
 
@@ -67,7 +69,6 @@ stat :: { Statement }
      : declare { $1 }
      | assign { $1 }
      | incdec { $1 }
-     | fstat { $1 } 
      | print { $1 }
      | readin { $1 }
 
@@ -95,14 +96,10 @@ exp :: { Exp }
     : binoperation { $1 }
     | unoperation { $1 }
     | literal { $1 }
-    | id { $1 }
+    | id { Var $1 }
 
 function :: { FunctionDecl }
-         : theroom id obr  cbr contained mtype fstat afound exp { Function $6 $2 [] $7 }
-
-fstat :: { [Statement] }
-      : { [] }
-      | stat fstat { [$1] ++ $2 }
+         : theroom id obr  cbr contained mtype stats afound exp { Function $6 $2 [] $7 }
 
 print :: { Statement }
       : id saida sep { Print (Var $1) }
@@ -114,15 +111,15 @@ readin :: { Statement }
        : what was id qm { ReadIn $3 }
 
 wnot :: { WhileNot }
-     : eventual obr cond cbr because fstat enought sep { While $3 $6 }
+     : eventual obr cond cbr because stats enought sep { While $3 $6 }
 
 ifcond :: { Conditional }
-       : perhaps obr cond cbr so fstat aunsure { If $3 $6 }
-       | perhaps obr cond cbr so fstat { If $3 $6 }
+       : perhaps obr cond cbr so stats aunsure { If $3 $6 }
+       | perhaps obr cond cbr so stats { If $3 $6 }
 
 elses :: { Conditional }
-      : ormaybe fstat aunsurew { Else $2 }
-      | ormaybe obr cond cbr so fstat elses { ElseIf $3 $6 }
+      : ormaybe stats aunsurew { Else $2 }
+      | ormaybe obr cond cbr so stats elses { ElseIf $3 $6 }
 
 cond :: { BoolExpr }
      : so { Bool False }
@@ -132,6 +129,9 @@ binoperation :: { Exp }
 
 unoperation :: { Exp }
             : un exp { UnOpr $1 $2 }
+
+ignore : literal thoughta {}
+       | exp thoughta {}
 
 {
 
@@ -190,6 +190,11 @@ data BoolExpr
     deriving (Eq, Show)
 
 parseError :: [Token] -> a
-parseError _ = error "Parser Error!"
+parseError t = error (show (reverse t))
+
+tokensToString :: [Token] -> String -> String
+tokensToString [] s     = s
+tokensToString (x:xs) s = (tokensToString xs s) ++ (show x) ++ " " ++ s
+
 
 }
