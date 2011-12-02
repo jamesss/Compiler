@@ -80,7 +80,7 @@ declare :: { Statement }
         : id wasa mtype sep { Declare $3 $1 } 
         
 assign :: { Statement }
-       : id became exp sep { Assign $3 $1 }
+       : id became exp sep { Assign $1 $3 }
         
 mtype   :: { MType }
         : tletter { MLett }
@@ -105,24 +105,24 @@ fstat :: { [Statement] }
       | stat fstat { [$1] ++ $2 }
 
 print :: { Statement }
-      : id saida sep { Print $1 }
+      : id saida sep { Print (Var $1) }
       | literal saida sep { Print $1 }
-      | id spoke sep { Print $1 }
+      | id spoke sep { Print (Var $1) }
       | literal spoke { Print $1 }
 
 readin :: { Statement }
        : what was id qm { ReadIn $3 }
 
 wnot :: { WhileNot }
-     : eventual obr cond cbr because fstat enought sep { $1 }
+     : eventual obr cond cbr because fstat enought sep { While $3 $6 }
 
 ifcond :: { Conditional }
        : perhaps obr cond cbr so fstat aunsure { If $3 $6 }
        | perhaps obr cond cbr so fstat { If $3 $6 }
 
 elses :: { Conditional }
-      : ormaybe fstat aunsurew { Else $3 $3 }
-      | ormaybe obr cond cbr so fstat elses { ElseIf $3 $3 }
+      : ormaybe fstat aunsurew { Else $2 }
+      | ormaybe obr cond cbr so fstat elses { ElseIf $3 $6 }
 
 cond :: { BoolExpr }
      : so { Bool False }
@@ -180,6 +180,7 @@ data Exp
     | BinOpr Char Exp Exp
     | Int Int
     | Char Char
+    | String String
     | Var String
     deriving (Show, Eq)
 
