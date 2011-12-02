@@ -45,8 +45,10 @@ piece                       { \s -> Piece }
 \'s                         { \s -> ICommaS }
 so                          { \s -> So }
 or\ maybe                   { \s -> OrMaybe }
+because                     { \s -> Because }
 
 [\%\+\^\*\&\/\-\|\>\<]|={2}|\<=|\>=    { \s -> BinOp (head s) }
+\~                           { \s -> UnOp (head s) }
 
 [\.]                        { \s -> Separator }
 [\,]                        { \s -> Separator }
@@ -76,6 +78,7 @@ data Token =
    AliceFound       |
    Spoke            |
    BinOp Char       |
+   UnOp Char        |
    ThoughtAlice     |
    TheRoom  |
    ContainedA   |
@@ -94,7 +97,8 @@ data Token =
    ICommaS  |
    AliceUnsure |
   So |
-  OrMaybe
+  OrMaybe |
+  Because
    deriving (Eq,Show)
 
 }

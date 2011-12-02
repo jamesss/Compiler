@@ -45,8 +45,10 @@ import Lexer
     cs        { ICommaS }
     so        { So }
     ormaybe   { OrMaybe }
+    because   { Because }
 
     bin       { BinOp $$ }
+    un        { UnOp $$ }
 
     sep       { Separator }
     
@@ -58,6 +60,14 @@ import Lexer
 program :: { AST }
         : stat { $1 }
         | stat program { $1 }
+
+stat :: { Statement }
+     : declare { $1 }
+     | assign { $1 }
+     | incdec { $1 }
+     | fstat { $1 } 
+     | print { $1 }
+     | readin { $1 }
 
 literal :: { Exp }
         : string { $1 }
@@ -86,7 +96,7 @@ exp :: { Exp }
     | id { $1 }
 
 function :: { XXXXX }
-         : theroom obracket cond cbracket containeda mtype fstat afound exp { $1 }
+         : theroom obr cond cbr contained mtype fstat afound exp { $1 }
 
 fstat :: { Statement }
       : stat fstat { $1 }
@@ -98,20 +108,27 @@ print :: { Statement }
       | id spoke sep { $1 }
 
 readin :: { Statement }
-       : whatwas id qmark { $1 }
+       : what was id qm { $1 }
 
 wnot :: { WhileNot }
-     : eventually obracket cond cbracket because fsat enought sep { $1 }
+     : eventual obr cond cbr because fstat enought sep { $1 }
 
 ifcond :: { Conditional }
-       : perhaps obracket cond cbracket so fstat aliceunsure { $1 }
-       : perhaps obracket cond cbracket so fstat { $1 }
+       : perhaps obr cond cbr so fstat aunsure { $1 }
+       | perhaps obr cond cbr so fstat { $1 }
 
 elses :: { AST }
-      : ormaybe obr cond cbr so fstat aliceunsurew { $1 }
+      : ormaybe obr cond cbr so fstat aunsurew { $1 }
       | ormaybe obr cond cbr so fstat elses { $1 }
 
+cond :: { BoolExpr }
+     : so { $1 }
 
+binoperation :: { Exp }
+              : exp bin exp { BinOpr $2 $1 $3 } 
+
+unoperation :: { Exp }
+            : un exp { UnOpr $1 $2 }
 
 {
 
@@ -147,12 +164,17 @@ data FunctionDecl
     = MType Function String 
 
 data Exp
-    = UnOp Char Exp
+    = UnOpr Char Exp
     | BinOpr Char Exp Exp
     | Int Int
     | Char Char
     | Var String
     deriving (Show, Eq)
+
+data BoolExpr
+    = True
+    | False
+    | Exp String Exp
 
 parseError :: [Token] -> a
 parseError _ = error "Parser Error!"
