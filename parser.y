@@ -54,12 +54,14 @@ import Lexer
     
     id        { Id $$ }
     
-
 %%
 
 program :: { AST }
-        : stat { $1 }
-        | stat program { $1 }
+        : stats { Program $1 }
+
+stats :: { [Statement] }
+      :  { [] }
+      | stat stats { [$1] ++ $2 }
 
 stat :: { Statement }
      : declare { $1 }
@@ -70,9 +72,9 @@ stat :: { Statement }
      | readin { $1 }
 
 literal :: { Exp }
-        : string { $1 }
-        | integer { $1 }
-        | character { $1 }
+        : string { String $1 }
+        | integer { Int $1 }
+        | character { Char $1 }
 
 declare :: { Statement }
         : id wasa mtype sep { Declare $3 $1 } 
@@ -96,33 +98,34 @@ exp :: { Exp }
     | id { $1 }
 
 function :: { FunctionDecl }
-         : theroom obr cond cbr contained mtype fstat afound exp { $1 }
+         : theroom id obr  cbr contained mtype fstat afound exp { Function $6 $2 [] $7 }
 
-fstat :: { Statement }
-      : stat fstat { $1 }
-      | stat { $1 }
+fstat :: { [Statement] }
+      : { [] }
+      | stat fstat { [$1] ++ $2 }
 
 print :: { Statement }
-      : id saida sep { $1 }
-      | literal saida sep { $1 }
-      | id spoke sep { $1 }
+      : id saida sep { Print $1 }
+      | literal saida sep { Print $1 }
+      | id spoke sep { Print $1 }
+      | literal spoke { Print $1 }
 
 readin :: { Statement }
-       : what was id qm { $1 }
+       : what was id qm { ReadIn $3 }
 
 wnot :: { WhileNot }
      : eventual obr cond cbr because fstat enought sep { $1 }
 
 ifcond :: { Conditional }
-       : perhaps obr cond cbr so fstat aunsure { $1 }
-       | perhaps obr cond cbr so fstat { $1 }
+       : perhaps obr cond cbr so fstat aunsure { If $3 $6 }
+       | perhaps obr cond cbr so fstat { If $3 $6 }
 
-elses :: { AST }
-      : ormaybe obr cond cbr so fstat aunsurew { $1 }
-      | ormaybe obr cond cbr so fstat elses { $1 }
+elses :: { Conditional }
+      : ormaybe fstat aunsurew { Else $3 $3 }
+      | ormaybe obr cond cbr so fstat elses { ElseIf $3 $3 }
 
 cond :: { BoolExpr }
-     : so { $1 }
+     : so { Bool False }
 
 binoperation :: { Exp }
               : exp bin exp { BinOpr $2 $1 $3 } 
@@ -181,7 +184,7 @@ data Exp
     deriving (Show, Eq)
 
 data BoolExpr
-    = Bool
+    = Bool Bool
     | Exp String Exp
     deriving (Eq, Show)
 
