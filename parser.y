@@ -71,7 +71,7 @@ stat :: { Statement }
      | print { $1 }
      | readin { $1 }
      | wnot { WhileNot $1 }
-     | function { FunctionDecl $1 }
+     | function { FunctionDecl $1 } 
      | ifcond { Conditional $1 }
      | readin { $1 }
      | ignore { $1 }
@@ -105,9 +105,17 @@ exp :: { Exp }
     | literal { $1 }
     | id { Var $1 }
     | id cs exp piece { ArrayGetElem $1 $3 }
+    | fcall { FunctionCall $1 }
 
 function :: { FunctionDecl }
          : theroom id obr params cbr contained mtype stats { Function $7 $2 $4 $8 }
+
+fcall :: { FunctionCall }
+      : id obr callparams cbr { Call $1 $3 }
+
+callparams :: { [Exp] }
+           : exp sep callparams { [$1] ++ $3 }
+           | exp { [$1] }
 
 params :: { [(String,MType)] } 
        : mtype id sep params { [($2,$1)] ++ $4 }
@@ -120,6 +128,7 @@ print :: { Statement }
       | literal spoke sep { Print $1 }
       | exp spoke sep { Print $1 }
       | exp saida sep { Print $1 }
+      | afound exp sep { Print $2 }
 
 readin :: { Statement }
        : what was id qm { ReadIn $3 }
@@ -169,8 +178,7 @@ data Statement
     | ReadIn String
     | Conditional Conditional
     | WhileNot WhileNot
-    | FunctionDecl FunctionDecl
-    | FunctionCall
+    | FunctionDecl FunctionDecl 
     | DeclareArray Int MType String
     | ArraySetElem String Exp Exp 
     | Skip
@@ -204,6 +212,7 @@ data Exp
     | String String
     | Var String
     | ArrayGetElem String Exp
+    | FunctionCall FunctionCall
     deriving (Show, Eq)
 
 data BoolExpr
