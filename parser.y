@@ -82,10 +82,12 @@ literal :: { Exp }
         | character { Char $1 }
 
 declare :: { Statement }
-        : id wasa mtype sep { Declare $3 $1 } 
+        : id wasa mtype sep { Declare $3 $1 }
+        | id had integer mtype sep { DeclareArray $3 $4 $1 }
         
 assign :: { Statement }
        : id became exp sep { Assign $1 $3 }
+       | id cs exp piece became exp sep { ArraySetElem $1 $3 $6 }
         
 mtype   :: { MType }
         : tletter { MLett }
@@ -164,6 +166,9 @@ data Statement
     | WhileNot WhileNot
     | FunctionDecl FunctionDecl
     | FunctionCall
+    | DeclareArray Int MType String
+    | ArraySetElem String Exp Exp
+    | ArrayGetElem String Exp
     | Skip
     deriving (Show, Eq) 
 
