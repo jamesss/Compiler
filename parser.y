@@ -71,6 +71,10 @@ stat :: { Statement }
      | incdec { $1 }
      | print { $1 }
      | readin { $1 }
+     | wnot { WhileNot $1 }
+     | function { FunctionDecl $1 }
+     | ignore { $1 }
+
 
 literal :: { Exp }
         : string { String $1 }
@@ -99,7 +103,11 @@ exp :: { Exp }
     | id { Var $1 }
 
 function :: { FunctionDecl }
-         : theroom id obr  cbr contained mtype stats afound exp { Function $6 $2 [] $7 }
+         : theroom id obr params cbr contained mtype stats { Function $7 $2 $4 $8 }
+
+params :: { [(String,MType)] } 
+       : mtype id sep params { [($2,$1)] ++ $4 }
+       | mtype id { [($2,$1)] }
 
 print :: { Statement }
       : id saida sep { Print (Var $1) }
@@ -111,7 +119,7 @@ readin :: { Statement }
        : what was id qm { ReadIn $3 }
 
 wnot :: { WhileNot }
-     : eventual obr cond cbr because stats enought sep { While $3 $6 }
+     : eventual obr cond cbr because stats enought { While $3 $6 }
 
 ifcond :: { Conditional }
        : perhaps obr cond cbr so stats aunsure { If $3 $6 }
@@ -122,7 +130,8 @@ elses :: { Conditional }
       | ormaybe obr cond cbr so stats elses { ElseIf $3 $6 }
 
 cond :: { BoolExpr }
-     : so { Bool False }
+     : exp { Bool False }
+     | exp bin exp { Bool False }
 
 binoperation :: { Exp }
               : exp bin exp { BinOpr $2 $1 $3 } 
@@ -130,8 +139,8 @@ binoperation :: { Exp }
 unoperation :: { Exp }
             : un exp { UnOpr $1 $2 }
 
-ignore : literal thoughta {}
-       | exp thoughta {}
+ignore :: { Statement }
+       : exp thoughta { Skip }
 
 {
 
@@ -152,9 +161,10 @@ data Statement
     | Print Exp
     | ReadIn String
     | Conditional
-    | WhileNot
-    | FunctionDecl
+    | WhileNot WhileNot
+    | FunctionDecl FunctionDecl
     | FunctionCall
+    | Skip
     deriving (Show, Eq) 
 
 data Conditional
@@ -190,7 +200,7 @@ data BoolExpr
     deriving (Eq, Show)
 
 parseError :: [Token] -> a
-parseError t = error (show (reverse t))
+parseError t = error (show t)
 
 tokensToString :: [Token] -> String -> String
 tokensToString [] s     = s
