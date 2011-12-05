@@ -20,3 +20,4 @@ clean:
 
 parsertests: default
 	./testparser > parsertests.txt 2> /dev/null
+	less parsertests.txt

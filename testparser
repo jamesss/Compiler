@@ -1,14 +1,21 @@
 #!/bin/bash
+OKTESTS=0
+FAILTESTS=0
 for f in m3examples/*.alice
     do
     OUTPUT=`./compiler < $f`
-   if [ -z "$OUTPUT" ];
+    if [ -z "$OUTPUT" ];
         then
             echo "Testing" $f "----- FAILED!" ;
+            let "FAILTESTS += 1";
         else
-            echo "Testing" $f "----- OK!"
-            echo "=== Print of resulting program ==="
-            echo $OUTPUT
-            echo "=================================="
-    fi
+            echo "Testing" $f "----- OK!";
+            echo "=== Print of resulting program ===";
+            echo $OUTPUT;
+            echo "==================================";
+            let "OKTESTS += 1";
+    fi 
     done
+echo "FAILED: $FAILTESTS, OK: $OKTESTS";
+let "PERC = (OKTESTS*100)/(FAILTESTS+OKTESTS)";
+echo "$PERC% PASS RATE";

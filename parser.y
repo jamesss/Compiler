@@ -2,8 +2,6 @@
 
 module Parser where
 import Lexer
-import Debug.Trace
-
 
 }
 
@@ -46,7 +44,8 @@ import Debug.Trace
     qm        { QMark }
     cs        { ICommaS }
     so        { So }
-    ormaybe   { OrMaybe }
+    or        { Or }
+    maybe     { Maybe }
     because   { Because }
 
     bin       { BinOp $$ }
@@ -73,6 +72,8 @@ stat :: { Statement }
      | readin { $1 }
      | wnot { WhileNot $1 }
      | function { FunctionDecl $1 }
+     | ifcond { Conditional $1 }
+     | readin { $1 }
      | ignore { $1 }
 
 
@@ -116,7 +117,7 @@ print :: { Statement }
       : id saida sep { Print (Var $1) }
       | literal saida sep { Print $1 }
       | id spoke sep { Print (Var $1) }
-      | literal spoke { Print $1 }
+      | literal spoke sep { Print $1 }
       | exp spoke sep { Print $1 }
       | exp saida sep { Print $1 }
 
@@ -128,11 +129,12 @@ wnot :: { WhileNot }
 
 ifcond :: { Conditional }
        : perhaps obr cond cbr so stats aunsure { If $3 $6 }
-       | perhaps obr cond cbr so stats { If $3 $6 }
+       | perhaps obr cond cbr so stats elses aunsurew { IfE $3 $6 $7 }
 
 elses :: { Conditional }
-      : ormaybe stats aunsurew { Else $2 }
-      | ormaybe obr cond cbr so stats elses { ElseIf $3 $6 }
+      : or stats { Else $2 }
+      | or maybe obr cond cbr so stats { ElseIf $4 $7 }
+      | or maybe obr cond cbr so stats elses { ElseIfE $4 $7 $8 }
 
 cond :: { BoolExpr }
      : exp { Bool False }
@@ -165,7 +167,7 @@ data Statement
     | Return Exp
     | Print Exp
     | ReadIn String
-    | Conditional
+    | Conditional Conditional
     | WhileNot WhileNot
     | FunctionDecl FunctionDecl
     | FunctionCall
@@ -176,7 +178,9 @@ data Statement
 
 data Conditional
     = If BoolExpr [Statement]
+    | IfE BoolExpr [Statement] Conditional
     | ElseIf BoolExpr [Statement]
+    | ElseIfE BoolExpr [Statement] Conditional
     | Else [Statement]
     deriving (Show, Eq)
 

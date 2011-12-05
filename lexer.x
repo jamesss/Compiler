@@ -44,7 +44,8 @@ piece                       { \s -> Piece }
 \?                          { \s -> QMark }
 \'s                         { \s -> ICommaS }
 so                          { \s -> So }
-or\ maybe                   { \s -> OrMaybe }
+or                          { \s -> Or }
+maybe                       { \s -> Maybe }
 because                     { \s -> Because }
 
 [\%\+\^\*\&\/\-\|\>\<]|={2}|\<=|\>=    { \s -> BinOp (head s) }
@@ -96,10 +97,10 @@ data Token =
    QMark    |
    ICommaS  |
    AliceUnsure |
-  So |
-  OrMaybe |
-  Because
+   So |
+   Or |
+   Maybe |
+   Because
    deriving (Eq,Show)
 
 }
-
