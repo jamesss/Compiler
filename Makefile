@@ -5,7 +5,7 @@ lexer: lexer.x
 	alex -g lexer.x -o lexer.hs
 
 parser: parser.y
-	happy -g -a -c parser.y
+	happy -g -a -c -i parser.y
 
 justthelexer: lexer
 	ghc lexer.hs lexmain.hs -o lexer
