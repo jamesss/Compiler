@@ -57,7 +57,7 @@ then                        { \s -> Separator }
 and                         { \s -> Separator }
 but                         { \s -> Separator }
 too.                        { \s -> Separator }
-[A-Za-z]+	                { \s -> Id s }
+[A-Za-z]+[A-Za-z0-9]*       { \s -> Id s }
 
 .                           { \s -> error s }
 

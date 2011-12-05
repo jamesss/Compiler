@@ -84,7 +84,8 @@ literal :: { Exp }
 
 declare :: { Statement }
         : id wasa mtype sep { Declare $3 $1 }
-        | id had integer mtype sep { DeclareArray $3 $4 $1 }
+        | id had exp mtype sep { DeclareArray $3 $4 $1 }
+        | id had id mtype sep { DeclareArray (SizeOfArray $3) $4 $1 }
         
 assign :: { Statement }
        : id became exp sep { Assign $1 $3 }
@@ -109,6 +110,10 @@ exp :: { Exp }
 
 function :: { FunctionDecl }
          : theroom id obr params cbr contained mtype stats { Function $7 $2 $4 $8 }
+         | theroom id obr params cbr contained mtype stats return { Function $7 $2 $4 ($8++[$9]) } 
+
+return :: { Statement }
+       : afound exp sep { Return $2 }
 
 fcall :: { FunctionCall }
       : id obr callparams cbr { Call $1 $3 }
@@ -179,8 +184,8 @@ data Statement
     | Conditional Conditional
     | WhileNot WhileNot
     | FunctionDecl FunctionDecl 
-    | DeclareArray Int MType String
-    | ArraySetElem String Exp Exp 
+    | DeclareArray Exp MType String
+    | ArraySetElem String Exp Exp
     | Skip
     deriving (Show, Eq) 
 
@@ -213,6 +218,7 @@ data Exp
     | Var String
     | ArrayGetElem String Exp
     | FunctionCall FunctionCall
+    | SizeOfArray String
     deriving (Show, Eq)
 
 data BoolExpr
