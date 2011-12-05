@@ -103,6 +103,7 @@ exp :: { Exp }
     | unoperation { $1 }
     | literal { $1 }
     | id { Var $1 }
+    | id cs exp piece { ArrayGetElem $1 $3 }
 
 function :: { FunctionDecl }
          : theroom id obr params cbr contained mtype stats { Function $7 $2 $4 $8 }
@@ -116,6 +117,8 @@ print :: { Statement }
       | literal saida sep { Print $1 }
       | id spoke sep { Print (Var $1) }
       | literal spoke { Print $1 }
+      | exp spoke sep { Print $1 }
+      | exp saida sep { Print $1 }
 
 readin :: { Statement }
        : what was id qm { ReadIn $3 }
@@ -167,8 +170,7 @@ data Statement
     | FunctionDecl FunctionDecl
     | FunctionCall
     | DeclareArray Int MType String
-    | ArraySetElem String Exp Exp
-    | ArrayGetElem String Exp
+    | ArraySetElem String Exp Exp 
     | Skip
     deriving (Show, Eq) 
 
@@ -197,6 +199,7 @@ data Exp
     | Char Char
     | String String
     | Var String
+    | ArrayGetElem String Exp
     deriving (Show, Eq)
 
 data BoolExpr
