@@ -17,3 +17,6 @@ clean:
 	rm parser.hs
 	rm *.hi
 	rm lexer
+
+parsertests: default
+	./testparser > parsertests.txt 2> /dev/null

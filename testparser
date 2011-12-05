@@ -1,0 +1,14 @@
+#!/bin/bash
+for f in m3examples/*.alice
+    do
+    OUTPUT=`./compiler < $f`
+   if [ -z "$OUTPUT" ];
+        then
+            echo "Testing" $f "----- FAILED!" ;
+        else
+            echo "Testing" $f "----- OK!"
+            echo "=== Print of resulting program ==="
+            echo $OUTPUT
+            echo "=================================="
+    fi
+    done
