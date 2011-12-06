@@ -45,7 +45,6 @@ changed                     { \s -> Changed }
 [\)]                        { \s -> CBracket }
 what                        { \s -> What }
 piece                       { \s -> Piece }
-\?                          { \s -> QMark }
 \'s                         { \s -> ICommaS }
 so                          { \s -> So }
 or                          { \s -> Or }
@@ -63,6 +62,7 @@ then                        { \s -> Separator }
 and                         { \s -> Separator }
 but                         { \s -> Separator }
 too.                        { \s -> Separator }
+\?                          { \s -> Separator }
 [A-Za-z]+[A-Za-z0-9]*       { \s -> Id s }
 
 .                           { \s -> error s }

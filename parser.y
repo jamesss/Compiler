@@ -41,7 +41,6 @@ import Lexer
     what      { What }
     was       { Was }
     piece     { Piece }
-    qm        { QMark }
     cs        { ICommaS }
     so        { So }
     or        { Or }
@@ -82,7 +81,7 @@ stat :: { Statement }
      | readin { $1 }
      | ignore { $1 }
      | lglass { FunctionDecl $1 }
-     | exp { LExp $1 } 
+     | exp sep { LExp $1 } 
 
 literal :: { Exp }
         : string { String $1 }
@@ -138,7 +137,7 @@ lglass :: { FunctionDecl }
        : lookglass id changed aa mtype stat { Function $5 $2 [("param",$5)] [$6] } 
 
 lglasscall :: { FunctionCall }
-           : exp went through id sep { Call $4 [$1] }
+           : exp went through id { Call $4 [$1] }
 
 print :: { Statement }
       : id saida sep { Print (Var $1) }
@@ -150,7 +149,7 @@ print :: { Statement }
       | afound exp sep { Print $2 }
 
 readin :: { Statement }
-       : what was id qm { ReadIn $3 }
+       : what was id sep { ReadIn $3 }
        | what was id cs exp piece sep { ReadIn $3 }
 
 wnot :: { WhileNot }
