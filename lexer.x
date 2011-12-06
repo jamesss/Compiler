@@ -49,6 +49,7 @@ piece                       { \s -> Piece }
 \'s                         { \s -> ICommaS }
 so                          { \s -> So }
 or                          { \s -> Or }
+either                      { \s -> Either }
 maybe                       { \s -> Maybe }
 because                     { \s -> Because }
 
@@ -110,7 +111,8 @@ data Token =
    Went |
    Through |
    LookingGlass |
-   Changed
+   Changed |
+   Either
    deriving (Eq,Show)
 
 }

@@ -45,6 +45,7 @@ import Lexer
     cs        { ICommaS }
     so        { So }
     or        { Or }
+    either    { Either }
     maybe     { Maybe }
     because   { Because }
     lookglass { LookingGlass }
@@ -158,6 +159,7 @@ wnot :: { WhileNot }
 ifcond :: { Conditional }
        : perhaps obr cond cbr so stats aunsure { If $3 $6 }
        | perhaps obr cond cbr so stats elses aunsurew { IfE $3 $6 $7 }
+       | either obr cond cbr so stats elses aunsurew { IfE $3 $6 $7 }
 
 elses :: { Conditional }
       : or stats { Else $2 }
