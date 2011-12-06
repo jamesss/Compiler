@@ -51,6 +51,7 @@ import Lexer
     changed   { Changed }
     went      { Went }
     through   { Through }
+    spider    { Spider }
 
     bin       { BinOp $$ }
     dbin      { DBinOp $$ }
@@ -132,6 +133,8 @@ callparams :: { [Exp] }
 params :: { [(String,MType)] } 
        : mtype id sep params { [($2,$1)] ++ $4 }
        | mtype id { [($2,$1)] }
+       | spider mtype id sep params { [($3,$2)] ++ $5 }
+       | spider mtype id { [($3,$2)] }
 
 lglass :: { FunctionDecl }
        : lookglass id changed aa mtype stat { Function $5 $2 [("param",$5)] [$6] } 

@@ -51,6 +51,7 @@ or                          { \s -> Or }
 either                      { \s -> Either }
 maybe                       { \s -> Maybe }
 because                     { \s -> Because }
+spider                      { \s -> Spider }
 
 [\%\+\^\*\&\/\-\|\>\<\=]  { \s -> BinOp (head s) }
 ={2}|\<=|\>=|\&{2}|!=|\|{2}     { \s -> DBinOp s }
@@ -112,7 +113,8 @@ data Token =
    Through |
    LookingGlass |
    Changed |
-   Either
+   Either |
+   Spider
    deriving (Eq,Show)
 
 }
