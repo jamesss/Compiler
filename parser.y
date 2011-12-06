@@ -157,6 +157,7 @@ wnot :: { WhileNot }
 
 ifcond :: { Conditional }
        : perhaps obr cond cbr so stats aunsure { If $3 $6 }
+       | perhaps obr cond cbr so stats aunsurew { If $3 $6 }
        | perhaps obr cond cbr so stats elses aunsurew { IfE $3 $6 $7 }
        | either obr cond cbr so stats elses aunsurew { IfE $3 $6 $7 }
 
@@ -178,6 +179,7 @@ binoperation :: { Exp }
               | obr exp bin exp cbr { BinOpr $3 $2 $4 }
 unoperation :: { Exp }
             : un exp { UnOpr $1 $2 }
+            | bin exp { UnOpr $1 $2 }
 
 ignore :: { Statement }
        : exp thoughta { Skip }
