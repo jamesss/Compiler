@@ -150,6 +150,7 @@ print :: { Statement }
 
 readin :: { Statement }
        : what was id qm { ReadIn $3 }
+       | what was id cs exp piece sep { ReadIn $3 }
 
 wnot :: { WhileNot }
      : eventual obr cond cbr because stats enought { While $3 $6 }
@@ -173,7 +174,7 @@ cond :: { BoolExpr }
 binoperation :: { Exp }
               : exp bin exp { BinOpr $2 $1 $3 } 
               | exp dbin exp { DBinOpr $2 $1 $3 }
-
+              | obr exp bin exp cbr { BinOpr $3 $2 $4 }
 unoperation :: { Exp }
             : un exp { UnOpr $1 $2 }
 
