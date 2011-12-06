@@ -25,21 +25,25 @@ number                      { \s -> Number }
 letter                      { \s -> Letter }
 sentence                    { \s -> Sentence }
 
-was\ a                      { \s -> WasA }
+was                         { \s -> Was }
+a                           { \s -> Aa }
 became                      { \s -> Became }
 drank                       { \s -> Drank }
 ate                         { \s -> Ate }
 The\ room                   { \s -> TheRoom }
-contained\ a                { \s -> ContainedA }
+contained                   { \s -> Contained }
 said\ Alice                 { \s -> SaidAlice }
 perhaps                     { \s -> Perhaps }
 had                         { \s -> Had }
 enough\ times.              { \s -> EnoughTimes }
 eventually                  { \s -> Eventually }
+went                        { \s -> Went }
+through                     { \s -> Through }
+The\ Looking\-Glass          { \s -> LookingGlass }
+changed                     { \s -> Changed }
 [\(]                        { \s -> OBracket }
 [\)]                        { \s -> CBracket }
 what                        { \s -> What }
-was                         { \s -> Was }
 piece                       { \s -> Piece }
 \?                          { \s -> QMark }
 \'s                         { \s -> ICommaS }
@@ -48,8 +52,9 @@ or                          { \s -> Or }
 maybe                       { \s -> Maybe }
 because                     { \s -> Because }
 
-[\%\+\^\*\&\/\-\|\>\<]|={2}|\<=|\>=    { \s -> BinOp (head s) }
-\~                           { \s -> UnOp (head s) }
+[\%\+\^\*\&\/\-\|\>\<\=]  { \s -> BinOp (head s) }
+={2}|\<=|\>=|\&{2}|!=|\|{2}     { \s -> DBinOp s }
+\~                          { \s -> UnOp (head s) }
 
 [\.]                        { \s -> Separator }
 [\,]                        { \s -> Separator }
@@ -73,16 +78,18 @@ data Token =
    Separator        |
    Drank            |
    Ate              |
-   WasA             |
+   Was              |
    Became           |
    Id String        |
    AliceFound       |
    Spoke            |
    BinOp Char       |
+   DBinOp String    |
    UnOp Char        |
    ThoughtAlice     |
    TheRoom  |
-   ContainedA   |
+   Contained    |
+   Aa   |
    SaidAlice    |
    Perhaps  |
    AliceUnsureW  |
@@ -92,7 +99,6 @@ data Token =
    OBracket |
    CBracket |
    What |
-   Was  |
    Piece    |
    QMark    |
    ICommaS  |
@@ -100,7 +106,11 @@ data Token =
    So |
    Or |
    Maybe |
-   Because
+   Because |
+   Went |
+   Through |
+   LookingGlass |
+   Changed
    deriving (Eq,Show)
 
 }

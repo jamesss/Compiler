@@ -8,7 +8,7 @@ parser: parser.y
 	happy -g -a -c -i parser.y
 
 justthelexer: lexer
-	ghc lexer.hs lexmain.hs -o lexer
+	ghc -v0 lexer.hs lexmain.hs -o lexer
 
 clean:
 	rm compiler

@@ -24,13 +24,13 @@ import Lexer
     tnumber   { Number }
     tletter   { Letter }
     tsentence { Sentence }
-
-    wasa      { WasA }
+     
+    aa        { Aa }
     became    { Became }
     drank     { Drank }
     ate       { Ate }
     theroom   { TheRoom }
-    contained { ContainedA }
+    contained { Contained }
     saida     { SaidAlice }
     perhaps   { Perhaps }
     had       { Had }
@@ -47,8 +47,13 @@ import Lexer
     or        { Or }
     maybe     { Maybe }
     because   { Because }
+    lookglass { LookingGlass }
+    changed   { Changed }
+    went      { Went }
+    through   { Through }
 
     bin       { BinOp $$ }
+    dbin      { DBinOp $$ }
     un        { UnOp $$ }
 
     sep       { Separator }
@@ -75,7 +80,8 @@ stat :: { Statement }
      | ifcond { Conditional $1 }
      | readin { $1 }
      | ignore { $1 }
-
+     | lglass { FunctionDecl $1 }
+     | exp { LExp $1 } 
 
 literal :: { Exp }
         : string { String $1 }
@@ -83,7 +89,7 @@ literal :: { Exp }
         | character { Char $1 }
 
 declare :: { Statement }
-        : id wasa mtype sep { Declare $3 $1 }
+        : id was aa mtype sep { Declare $4 $1 }
         | id had exp mtype sep { DeclareArray $3 $4 $1 }
         | id had id mtype sep { DeclareArray (SizeOfArray $3) $4 $1 }
         
@@ -107,10 +113,11 @@ exp :: { Exp }
     | id { Var $1 }
     | id cs exp piece { ArrayGetElem $1 $3 }
     | fcall { FunctionCall $1 }
+    | lglasscall { FunctionCall $1 }
 
 function :: { FunctionDecl }
-         : theroom id obr params cbr contained mtype stats { Function $7 $2 $4 $8 }
-         | theroom id obr params cbr contained mtype stats return { Function $7 $2 $4 ($8++[$9]) } 
+         : theroom id obr params cbr contained  aa mtype stats { Function $8 $2 $4 $9 }
+         | theroom id obr params cbr contained aa mtype stats return { Function $8 $2 $4 ($9++[$10]) } 
 
 return :: { Statement }
        : afound exp sep { Return $2 }
@@ -125,6 +132,12 @@ callparams :: { [Exp] }
 params :: { [(String,MType)] } 
        : mtype id sep params { [($2,$1)] ++ $4 }
        | mtype id { [($2,$1)] }
+
+lglass :: { FunctionDecl }
+       : lookglass id changed aa mtype stat { Function $5 $2 [("param",$5)] [$6] } 
+
+lglasscall :: { FunctionCall }
+           : exp went through id sep { Call $4 [$1] }
 
 print :: { Statement }
       : id saida sep { Print (Var $1) }
@@ -152,10 +165,14 @@ elses :: { Conditional }
 
 cond :: { BoolExpr }
      : exp { Bool False }
+     | exp dbin exp { Bool False }
      | exp bin exp { Bool False }
+     | exp bin exp bin cond { Bool False }
+     | exp dbin exp dbin cond { Bool False } 
 
 binoperation :: { Exp }
               : exp bin exp { BinOpr $2 $1 $3 } 
+              | exp dbin exp { DBinOpr $2 $1 $3 }
 
 unoperation :: { Exp }
             : un exp { UnOpr $1 $2 }
@@ -187,6 +204,7 @@ data Statement
     | DeclareArray Exp MType String
     | ArraySetElem String Exp Exp
     | Skip
+    | LExp Exp
     deriving (Show, Eq) 
 
 data Conditional
@@ -212,6 +230,7 @@ data FunctionCall
 data Exp
     = UnOpr Char Exp
     | BinOpr Char Exp Exp
+    | DBinOpr String Exp Exp
     | Int Int
     | Char Char
     | String String
