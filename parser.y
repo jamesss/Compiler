@@ -76,13 +76,14 @@ stat :: { Statement }
      | incdec { $1 }
      | print { $1 }
      | readin { $1 }
-     | wnot { WhileNot $1 }
-     | function { FunctionDecl $1 } 
+     | wnot { $1 }
+     | function { $1 } 
      | ifcond { Conditional $1 }
      | readin { $1 }
      | ignore { $1 }
-     | lglass { FunctionDecl $1 }
+     | lglass { $1 }
      | exp sep { LExp $1 } 
+     | return { $1 }
 
 literal :: { Exp }
         : string { String $1 }
@@ -113,17 +114,17 @@ exp :: { Exp }
     | literal { $1 }
     | id { Var $1 }
     | id cs exp piece { ArrayGetElem $1 $3 }
-    | fcall { FunctionCall $1 }
-    | lglasscall { FunctionCall $1 }
+    | fcall { $1 }
+    | lglasscall { $1 }
 
-function :: { FunctionDecl }
+function :: { Statement }
          : theroom id obr params cbr contained  aa mtype stats { Function $8 $2 $4 $9 }
          | theroom id obr params cbr contained aa mtype stats return { Function $8 $2 $4 ($9++[$10]) } 
 
 return :: { Statement }
        : afound exp sep { Return $2 }
 
-fcall :: { FunctionCall }
+fcall :: { Exp }
       : id obr callparams cbr { Call $1 $3 }
 
 callparams :: { [Exp] }
@@ -136,10 +137,10 @@ params :: { [(String,MType)] }
        | spider mtype id sep params { [($3,$2)] ++ $5 }
        | spider mtype id { [($3,$2)] }
 
-lglass :: { FunctionDecl }
+lglass :: { Statement }
        : lookglass id changed aa mtype stat { Function $5 $2 [("param",$5)] [$6] } 
 
-lglasscall :: { FunctionCall }
+lglasscall :: { Exp }
            : exp went through id { Call $4 [$1] }
 
 print :: { Statement }
@@ -149,14 +150,14 @@ print :: { Statement }
       | literal spoke sep { Print $1 }
       | exp spoke sep { Print $1 }
       | exp saida sep { Print $1 }
-      | afound exp sep { Print $2 }
+
 
 readin :: { Statement }
        : what was id sep { ReadIn $3 }
        | what was id cs exp piece sep { ReadIn $3 }
 
-wnot :: { WhileNot }
-     : eventual obr cond cbr because stats enought { While $3 $6 }
+wnot :: { Statement }
+     : eventual obr cond cbr because stats enought { WhileNot $3 $6 }
 
 ifcond :: { Conditional }
        : perhaps obr cond cbr so stats aunsure { If $3 $6 }
@@ -206,8 +207,8 @@ data Statement
     | Print Exp
     | ReadIn String
     | Conditional Conditional
-    | WhileNot WhileNot
-    | FunctionDecl FunctionDecl 
+    | WhileNot BoolExpr [Statement]
+    | Function MType String [(String,MType)] [Statement]
     | DeclareArray Exp MType String
     | ArraySetElem String Exp Exp
     | Skip
@@ -222,18 +223,6 @@ data Conditional
     | Else [Statement]
     deriving (Show, Eq)
 
-data WhileNot
-    = While BoolExpr [Statement]
-    deriving (Show, Eq)
-
-data FunctionDecl
-    = Function MType String [(String,MType)] [Statement]
-    deriving (Show, Eq)
-
-data FunctionCall
-    = Call String [Exp]
-    deriving (Show,Eq)
-
 data Exp
     = UnOpr Char Exp
     | BinOpr Char Exp Exp
@@ -243,7 +232,7 @@ data Exp
     | String String
     | Var String
     | ArrayGetElem String Exp
-    | FunctionCall FunctionCall
+    | Call String [Exp]
     | SizeOfArray String
     deriving (Show, Eq)
 
