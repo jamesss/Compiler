@@ -3,6 +3,11 @@
 INFILE="$1"
 
 
+if [ ! -e compiler ]; then
+    echo "Compiler binary is missing - have you run 'make'?"
+    exit 1
+fi
+
 if [ ! -e "$INFILE" ]; then
     echo "File \"$INFILE\" does not exist!"
     exit 1

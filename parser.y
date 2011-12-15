@@ -171,11 +171,11 @@ elses :: { Conditional }
       | or maybe obr cond cbr so stats elses { ElseIfE $4 $7 $8 }
 
 cond :: { BoolExpr }
-     : exp { Bool False }
-     | exp dbin exp { Bool False }
-     | exp bin exp { Bool False }
-     | exp bin exp bin cond { Bool False }
-     | exp dbin exp dbin cond { Bool False } 
+     : exp { SBoolExpr $1 }
+     | exp dbin exp { DBoolExpr $1 $2 $3 }
+     | exp bin exp { DBoolExpr $1 [$2] $3 }
+     | exp bin exp bin cond { CBoolExpr (DBoolExpr $1 [$2] $3) [$4] $5  }
+     | exp dbin exp dbin cond { CBoolExpr (DBoolExpr $1 $2 $3) $4 $5 } 
 
 binoperation :: { Exp }
               : exp bin exp { BinOpr $2 $1 $3 } 
@@ -238,7 +238,9 @@ data Exp
 
 data BoolExpr
     = Bool Bool
-    | Exp String Exp
+    | DBoolExpr Exp String Exp
+    | SBoolExpr Exp
+    | CBoolExpr BoolExpr String BoolExpr
     deriving (Eq, Show)
 
 parseError :: [Token] -> a
