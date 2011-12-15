@@ -28,6 +28,8 @@ To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Has
 \subsection{Type Checking}
 Our compiler checks for undefined variables, multiple declarations within the same scope of a variable, as well as assignment of an incorrect type to a declared variable. For this it makes use of a symbol table and assumes that a variable, once declared, is in scope for the rest of the program, but not inside a function declaration. These are of course considered separately and any variable declared here is only in scope within the body of the function.
 
+Inside the main file, the buildSymbolTable creates a symbol table and does all the type checking at compile time. However only one action can be performed inside the "do" statement and this line has been commented out.
+
 \subsection{Code Generation}
 The compiler uses the intermediate representation which is output by the parser in order to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but we decided that generating assembly code would be more useful in terms of the educational aims of the exercise.
 
@@ -43,9 +45,17 @@ If we were going to do this exercise again I would have used Haskell from the be
 In order to meet the deadline we had to focus on main features, but there are a few aspects which we would have liked to improve on:
 
 \begin{itemize}
+<<<<<<< HEAD
 \item Optimisation must be implemented for register allocation
 \item Compile and run the generated Assembly code
 \item Increase the number of errors caught at compile time
 \end{itemize}
 
+=======
+\item Optimisation must be implemented for register allocation.
+\item Improve, compile and run the generated Assembly code
+\item Increase the number of errors caught at compile time.
+\item Add restrictions to the BNF
+\end{itemize}
+>>>>>>> b8a1f3c1c4a166d230ef2acd6a742d6713504aa8
 \end{document}
