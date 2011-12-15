@@ -20,7 +20,7 @@ We deduced the language specifications by using the examples provided, by testin
 \section{The Design Choices}
 
 \subsection{Language}
-Our initial choice for writing the MAlice compiler was C++ and the \sl yacc \rm and \sl lex \rm tools. Although we succeeded in building a fully functional parser for the language, it then proved to be a bad decision in terms of code complexity. Therefore, after Milestone II we decided to radically change our approach and use Haskell. Its pattern matching features along with Happy and Alex, helped us successfully generate assembly code for MAlice, whilst making best use of registers etc.
+Our initial choice for writing the MAlice compiler was C++ and the \sl yacc \rm and \sl lex \rm tools. Although we succeeded in building a fully functional parser for the language, it then proved to be a bad decision in terms of code complexity. Therefore, after Milestone II we decided to radically change our approach and use Haskell. Its pattern matching features along with Happy and Alex, helped us successfully generate assembly code for MAlice.
 
 \subsection{The Lexer \& Parser}
 To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Haskell. Alex generates a stream of tokens which represent the text of the program and Happy translates these tokens into a list of assembly-like operations by means of the BNF-like specification we provided it. This representation is then passed to the type checker.
