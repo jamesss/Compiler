@@ -27,5 +27,31 @@ codeGen (s:ss) p = codeGen ss (p ++ (codeGenS s))
 
 
 codeGenS :: Statement -> String
-codeGenS (Declare s t) = "mov" 
-codeGenS (Assign s v) = "test"
+codeGenS (Assign s t)           = "mov eax, ebx\n" 
+codeGenS (Declare s v)          = "test\n"
+codeGenS (Decr s)               = ""
+codeGenS (Incr s)               = ""
+codeGenS (Return s)             = ""
+codeGenS (Print s)              = ""
+codeGenS (ReadIn s)             = ""
+codeGenS (Conditional c)        = ""
+codeGenS (WhileNot b stats)     = ""
+codeGenS (Function t s p stats) = ""
+codeGenS (DeclareArray e t s)   = ""
+codeGenS (ArraySetElem s e e')  = ""
+codeGenS (Skip)                 = ""
+codeGenS (LExp e)               = ""
+
+codeGenE :: Exp -> String
+codeGenE (UnOpr c e)            = ""
+codeGenE (BinOpr c e e')        = ""
+codeGenE (DBinOpr s e e')       = ""
+codeGenE (Int i)                = ""
+codeGenE (Char c)               = ""
+codeGenE (String s)             = ""
+codeGenE (Var s)                = ""
+codeGenE (ArrayGetElem s e)     = ""
+codeGenE (Call s params)        = ""
+codeGenE (SizeOfArray s)        = ""
+
+
