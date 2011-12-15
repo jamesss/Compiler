@@ -13,7 +13,7 @@
 \maketitle
 
 \section{The Product}
-Our compiler takes a MAlice program as input, tokenises it, converts it into an intermediate form and produces Intel IA-32 assembly code. It then assembles this to form an executable for the Intel platform.
+Our compiler takes a MAlice program as input, tokenises it, converts it into an intermediate form and produces Intel IA-32 assembly code. It then assembles this to form an executable for the Intel platform after linking it with the \tt cstdio.h \rm library.
 
 We deduced the language specifications by using the examples provided, by testing our own code and of course by making use of our programming skills and intuition.
 
@@ -29,20 +29,23 @@ To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Has
 Our compiler checks for undefined variables, multiple declarations within the same scope of a variable, as well as assignment of an incorrect type to a declared variable. For this it makes use of a symbol table and assumes that a variable, once declared, is in scope for the rest of the program, but not inside a function declaration. These are of course considered separately and any variable declared here is only in scope within the body of the function.
 
 \subsection{Code Generation}
-The compiler uses the intermediate representation which is output by the parser to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but xxxxxxxxxxxxxxxxxx
+The compiler uses the intermediate representation which is output by the parser in order to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but we decided that generating assembly code would be more useful in terms of the educational aims of the exercise.
 
 Functions such as reading data from the console are accomplished by using the \tt stdio.h \rm C library of assembly functions which is linked with the MAlice assembly by the \tt compile \rm command.
 
 \subsection{Operation}
-The compiler is operated by a bash script which takes the input alice file as its only argument. This script is run by the command \tt ./compile\rm .
+The compiler is operated by a bash script which takes the input \tt .alice \rm file as its only argument. This script is run by the command \tt ./compile\rm .
 
-\section{Further Development}
-In order to meet the deadline we had to focus on main features, but there are a few aspects which we are planning to improve on:
+\section{Retrospection}
+If we were going to do this exercise again I would have used Haskell from the beginning, or at least abandoned Milestone II, as this caused a severe delay in getting started with Milestone III - the largest part of the exercise. Furthermore we would have liked a third group member so that we could have been able to compete more fairly with larger groups.
+
+\section{Limitations \& Further Development}
+In order to meet the deadline we had to focus on main features, but there are a few aspects which we would have liked to improve on:
 
 \begin{itemize}
-\item Optimisation must be implemented for register allocation.
+\item Optimisation must be implemented for register allocation
 \item Compile and run the generated Assembly code
-\item Increase the number of errors caught at compile time.
+\item Increase the number of errors caught at compile time
 \end{itemize}
 
 \end{document}
