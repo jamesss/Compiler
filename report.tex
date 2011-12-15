@@ -20,7 +20,7 @@ We deduced the language specifications by using the examples provided, by testin
 \section{The Design Choices}
 
 \subsection{Language}
-Our initial choice for writing the MAlice compiler was C++ and the \sl yacc \rm and \sl lex \rm tools. Although we succeeded in building a fully functional parser for the language, it then proved to be a bad decision in terms of code complexity. Therefore, after Milestone II we decided to radically change our approach and use Haskell. Its pattern matching features along with Happy and Alex, helped us successfully generate assembly code for MAlice.
+Our initial choice for writing the MAlice compiler was C++ and the \sl yacc \rm and \sl lex \rm tools. Although we succeeded in building a fully functional parser for the language, it then proved to be a bad decision in terms of code complexity. Therefore, after Milestone II we decided to radically change our approach and use Haskell. Its pattern matching features along with Happy and Alex, helped us generate assembly code for MAlice.
 
 \subsection{The Lexer \& Parser}
 To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Haskell. Alex generates a stream of tokens which represent the text of the program and Happy translates these tokens into a list of assembly-like operations by means of the BNF-like specification we provided it. This representation is then passed to the type checker.
@@ -28,7 +28,7 @@ To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Has
 \subsection{Type Checking}
 Our compiler checks for undefined variables, multiple declarations within the same scope of a variable, as well as assignment of an incorrect type to a declared variable. For this it makes use of a symbol table and assumes that a variable, once declared, is in scope for the rest of the program, but not inside a function declaration. These are of course considered separately and any variable declared here is only in scope within the body of the function.
 
-Inside the main file, the buildSymbolTable creates a symbol table and does all the type checking at compile time. However only one action can be performed inside the "do" statement and this line has been commented out.
+Inside the main file, the buildSymbolTable creates a symbol table and does all the type checking at compile time. 
 
 \subsection{Code Generation}
 The compiler uses the intermediate representation which is output by the parser in order to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but we decided that generating assembly code would be more useful in terms of the educational aims of the exercise.
