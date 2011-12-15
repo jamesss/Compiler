@@ -8,7 +8,7 @@ import CodeGen
 
 main = do
     s <- getContents ;
-    --print (maliceParser (alexScanTokens s))
+    print (maliceParser (alexScanTokens s))
     --print (buildSymbolTable [] (getInstr (maliceParser (alexScanTokens s))) ++
-    putCode (transProgram (getInstr (maliceParser (alexScanTokens s))))
+    print (codeGen (getInstr (maliceParser (alexScanTokens s))) [] )
 

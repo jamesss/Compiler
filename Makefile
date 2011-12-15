@@ -1,5 +1,5 @@
 default: lexer parser
-	ghc lexer.hs parser.hs main.hs -o compiler
+	ghc lexer.hs parser.hs codegen.hs typecheck.hs main.hs -o compiler
 
 lexer: lexer.x
 	alex -g lexer.x -o lexer.hs
