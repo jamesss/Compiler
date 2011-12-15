@@ -11,12 +11,12 @@ justthelexer: lexer
 	ghc -v0 lexer.hs lexmain.hs -o lexer
 
 clean:
-	rm compiler
-	rm *.o
-	rm lexer.hs
-	rm parser.hs
-	rm *.hi
-	rm lexer
+	rm -f compiler
+	rm -f *.o
+	rm -f lexer.hs
+	rm -f parser.hs
+	rm -f *.hi
+	rm -f lexer
 
 parsertests: default
 	./testparser > parsertests.txt 2> /dev/null
@@ -25,6 +25,6 @@ parsertests: default
 report: report.tex
 	latex report.tex
 	dvipdf report.dvi
-	rm report.dvi
-	rm report.aux
-	rm report.log
+	rm -f report.dvi
+	rm -f report.aux
+	rm -f report.log
