@@ -4,34 +4,39 @@ INFILE="$1"
 
 
 if [ ! -e "$INFILE" ]; then
-    echo "File $INFILE does not exist!"
+    echo "File \"$INFILE\" does not exist!"
     exit 1
 fi
 
-OUTFILE= basename "$INFILE"
+#Executable always has same name as input program
+OUTFILE=`basename "$INFILE" .alice`
 
 ./compiler < "$INFILE" > "$OUTFILE.s"
 
 if [ $? != 0 ]; then
-    echo "Compiler error: " "$?"
+    echo "Compiler error!"
     exit 1
 fi
 
 nasm -f elf "$OUTFILE.s"
 
 if [ $? != 0 ]; then
-    echo "Assembler error: " "$?"
+    echo "Assembler error!"
     exit 1
 fi
 
-
+#Create link with cstdio.h for print and read functions
 gcc -c clink.c
 ld -o "$OUTFILE" "$OUTFILE.o" clink.o -lc --dynamic-linker=/lib/ld-linux.so.2 -melf_i386
 
 
 if [ $? != 0 ]; then
-    echo "Linker error: " "$?"
+    echo "Linker error!"
     exit 1
+fi
+
+if [ ! -e "$OUTFILE" ]; then
+    echo "Executable is missing!"
 fi
 
 
