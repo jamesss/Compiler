@@ -55,18 +55,21 @@ codeGen x y = codeGen' x x y
     codeGen' [] s' p     = header ++ p ++ (strings s')
     codeGen' (s:ss) s' p = codeGen' ss s' (p ++ (codeGenS s))
 
+codeGenJustStats :: [Statement] -> String -> String
+codeGenJustStats [] p     = p
+codeGenJustStats (s:ss) p = codeGenJustStats ss (p ++ (codeGenS s))
 
 codeGenS :: Statement -> String
-codeGenS (Assign s e)           = (codeGenE e) ++ "pop eax\n"
+codeGenS (Assign s e)           = "push \n" ++ (codeGenE e) ++ "pop \n"
 codeGenS (Declare s v)          = ""
 codeGenS (Decr s)               = ""
 codeGenS (Incr s)               = ""
-codeGenS (Return s)             = ""
+codeGenS (Return s)             = "\n   ret"
 codeGenS (Print s)              = ""
 codeGenS (ReadIn s)             = ""
 codeGenS (Conditional c)        = ""
 codeGenS (WhileNot b stats)     = ""
-codeGenS (Function t s p stats) = ""
+codeGenS (Function t s p stats) = saveRegs [0] ++ codeGenFunc (Function t s p stats) ++ restoreRegs [0]
 codeGenS (DeclareArray e t s)   = ""
 codeGenS (ArraySetElem s e e')  = ""
 codeGenS (Skip)                 = ""
@@ -74,18 +77,25 @@ codeGenS (LExp e)               = ""
 
 codeGenE :: Exp -> String
 codeGenE (UnOpr c e)            = ""
+codeGenE (BinOpr '=' e e')    = "\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "cmp eax, ebx\njne ret\n" 
+codeGenE (BinOpr '<' e e')      = "\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "cmp eax, ebx\njge ret\n" 
+codeGenE (BinOpr '>' e e')      = "\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "cmp eax, ebx\njle ret\n" 
+codeGenE (BinOpr '+' e e')      = "\npush ebx\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "add eax, ebx\n" 
+codeGenE (BinOpr '-' e e')      = "\npush ebx\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "sub eax, ebx\n" 
+codeGenE (BinOpr '*' e e')      = "\npush ebx\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "mul eax, ebx\n" 
+codeGenE (BinOpr '/' e e')      = "\npush ebx\nmov eax," ++ codeGenE e ++ "mov ebx," ++ codeGenE e' ++ "div eax, ebx\n" 
 codeGenE (BinOpr c e e')        = ""
 codeGenE (DBinOpr s e e')       = ""
-codeGenE (Int i)                = "push $" ++ show i ++ "\n"
-codeGenE (Char c)               = ""
+codeGenE (Int i)                = " $" ++ show i ++ "\n"
+codeGenE (Char c)               = " $" ++ show c ++ "\n"
 codeGenE (String s)             = ""
 codeGenE (Var s)                = ""
 codeGenE (ArrayGetElem s e)     = ""
-codeGenE (Call s params)        = ""
+codeGenE (Call s params)        = saveRegs [0] ++ "call " ++ s ++ "\n"
 codeGenE (SizeOfArray s)        = ""
 
 codeGenFunc :: Statement -> String
-codeGenFunc (Function t s p stats) = ""
+codeGenFunc (Function t s p stats) = s ++ ":\n" ++ codeGenJustStats stats [] ++ "\n"
 
 codeGenWhile :: Statement -> String
 codeGenWhile (WhileNot b stats) = ""
@@ -96,3 +106,7 @@ codeGenB (SBoolExpr e)          = ""
 codeGenB (DBoolExpr e o e')     = ""
 codeGenB (CBoolExpr b o b')     = ""
 
+
+fParams :: [Exp] -> String -> String
+fParams [] s     = s
+fParams (p:pp) s = fParams pp ((codeGenE p) ++ s)
