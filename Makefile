@@ -21,3 +21,10 @@ clean:
 parsertests: default
 	./testparser > parsertests.txt 2> /dev/null
 	less parsertests.txt
+
+report: report.tex
+	latex report.tex
+	dvipdf report.dvi
+	rm report.dvi
+	rm report.aux
+	rm report.log

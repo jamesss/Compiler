@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry} % See geometry.pdf to learn the layout 
+\usepackage{fixltx2e} %options. There are lots.
+\geometry{a4paper}                   % ... or a4paper or a5paper or ... 
+\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty 
+\usepackage{graphicx}
+
+\title{MAlice Milestone III - Report}
+\author{James Simpson \and Alina Boghiu}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{The Product}
+Our compiler takes a MAlice program as input, tokenises it, converts it into an intermediate form and produces Intel IA-32 assembly code. It then assembles this to form an executable for the Intel platform.
+
+We deduced the language specifications by using the examples provided, by testing our own code and of course by making use of our programming skills and intuition.
+
+\section{The Design Choices}
+
+\subsection{Language}
+Our initial choice for writing the MAlice compiler was C++ and the \sl yacc \rm and \sl lex \rm tools. Although we succeeded in building a fully functional parser for the language, it then proved to be a bad decision in terms of code complexity. Therefore, after Milestone II we decided to radically change our approach and use Haskell. Its pattern matching features along with Happy and Alex, helped us successfully generate assembly code for MAlice, whilst making best use of registers etc.
+
+\subsection{The Lexer \& Parser}
+To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Haskell. Alex generates a stream of tokens which represent the text of the program and Happy translates these tokens into a list of assembly-like operations by means of the BNF-like specification we provided it. This representation is then passed to the type checker.
+
+\subsection{Type Checking}
+Our compiler checks for undefined variables, multiple declarations within the same scope of a variable, as well as assignment of an incorrect type to a declared variable. For this it makes use of a symbol table and assumes that a variable, once declared, is in scope for the rest of the program, but not inside a function declaration. These are of course considered separately and any variable declared here is only in scope within the body of the function.
+
+\subsection{Code Generation}
+The compiler uses the intermediate representation which is output by the parser to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but xxxxxxxxxxxxxxxxxx
+
+Functions such as reading data from the console are accomplished by using the \tt stdio.h \rm C library of assembly functions which is linked with the MAlice assembly by the \tt compile \rm command.
+
+\subsection{Operation}
+The compiler is operated by a bash script which takes the input alice file as its only argument. This script is run by the command \tt ./compile\rm .
+
+\section{Further Development}
+We would have liked to implement some optimisations but sadly we ran out of time. 
+
+
+
+\end{document}
