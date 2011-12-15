@@ -90,4 +90,9 @@ codeGenFunc (Function t s p stats) = ""
 codeGenWhile :: Statement -> String
 codeGenWhile (WhileNot b stats) = ""
 
+codeGenB :: BoolExpr -> String
+codeGenB (Bool b)               = ""
+codeGenB (SBoolExpr e)          = ""
+codeGenB (DBoolExpr e o e')     = ""
+codeGenB (CBoolExpr b o b')     = ""
 
