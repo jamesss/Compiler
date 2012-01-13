@@ -30,11 +30,13 @@ stringTable (s:ss) x = stringTable ss x
 
 header :: String
 header = "; MAlice program for Intel architecture\n\n"
+         ++ "extern printf\n"
          ++ "section .text\n"
-         ++ "\n"
+         ++ "global _start\n"
+         ++ "_start:\n"
 
 strings :: [Statement] -> String
-strings s = concat [".data db \"" ++ escapeS x ++ "\"\n"| (x,y) <- str]
+strings s = "section .data\n" -- ++ concat ["msg: db \"" ++ escapeS x ++ "\"\n"| (x,y) <- str]
   where
     str = stringTable s []
 
