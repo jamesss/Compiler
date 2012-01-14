@@ -29,14 +29,23 @@ stringTable (Print (String s):ss) x = stringTable ss ((s,s):x)
 stringTable (s:ss) x = stringTable ss x
 
 header :: String
-header = "; MAlice program for Intel architecture\n\n"
+header = "; MAlice program for Intel architecture\n"
          ++ "extern printf\n"
          ++ "section .text\n"
          ++ "global _start\n"
          ++ "_start:\n"
+         ++ "push ebp\n"
+         ++ "mov ebp,esp\n"
+
+footer :: String
+footer = "mov esp,ebp\n"
+         ++ "pop ebp\n"
+         ++ "mov ebx,0\n"
+         ++ "mov eax,1\n"
+         ++ "int 0x80\n"
 
 strings :: [Statement] -> String
-strings s = "section .data\n" -- ++ concat ["msg: db \"" ++ escapeS x ++ "\"\n"| (x,y) <- str]
+strings s = "section .data\n"  ++ concat ["msg\tdb\t\"" ++ x ++ "\"\n"| (x,y) <- str] ++ "\nlen equ $ - msg"
   where
     str = stringTable s []
 
@@ -54,7 +63,7 @@ codeGen :: [Statement] -> String -> String
 codeGen x y = codeGen' x x y
   where
     codeGen' :: [Statement] -> [Statement] -> String -> String
-    codeGen' [] s' p     = header ++ p ++ (strings s')
+    codeGen' [] s' p     = header ++ p ++ footer ++ (strings s')
     codeGen' (s:ss) s' p = codeGen' ss s' (p ++ (codeGenS s))
 
 codeGenJustStats :: [Statement] -> String -> String
@@ -67,7 +76,7 @@ codeGenS (Declare s v)          = ""
 codeGenS (Decr s)               = "dec r\n"
 codeGenS (Incr s)               = "inc r\n"
 codeGenS (Return s)             = "\n   ret"
-codeGenS (Print s)              = "call printf\n"
+codeGenS (Print s)              = "mov edx,len\nmov ecx,msg\nmov ebx,1\nmov eax,4\nint 0x80\n"
 codeGenS (ReadIn s)             = ""
 codeGenS (Conditional c)        = ""
 codeGenS (WhileNot b stats)     = ""

@@ -31,7 +31,7 @@ if [ $? != 0 ]; then
 fi
 
 #Create link with cstdio.h for print and read functions
-gcc -c clink.c
+gcc -c -m32 clink.c
 ld -o "$OUTFILE" "$OUTFILE.o" clink.o -lc --dynamic-linker=/lib/ld-linux.so.2 -melf_i386
 
 
