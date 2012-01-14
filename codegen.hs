@@ -8,6 +8,9 @@ data Register
     = R0 | R1 | R2 | R3 | R4 | R5
     deriving(Eq,Show)
 
+type VTab = [String]
+type STab = [(Int,String)]
+
 register :: Register -> String
 register R0 = "eax"
 register R1 = "ebx"
@@ -26,15 +29,22 @@ saveRegs regsNotInUse = concat ["push " ++ (register x) ++ "\n" | x <- registers
 restoreRegs :: [Register] -> String
 restoreRegs regsNotInUse = concat ["pop " ++ (register x) ++ "\n" | x <- reverse (registers \\ regsNotInUse)]
 
-stringTable :: [Statement] -> [(String,String)] -> [(String,String)]
+stringTable :: [Statement] -> [Int] -> [(Int,String)] -> [(Int,String)]
 --Stringtable needs some way of having identifiers
-stringTable [] x     = x
-stringTable (Print (String s):ss) x = stringTable ss ((s,s):x)
-stringTable (s:ss) x = stringTable ss x
+stringTable [] n x     = x
+stringTable (Print (String s):ss) (n:ns) x = stringTable ss ns ((n,s):x)
+stringTable (s:ss) n x = stringTable ss n x
+
+sLookUp :: STab -> String -> Int
+sLookUp tab str = head [ i | (i,s) <- tab, s == str ]
+
+varTable :: [Statement] -> [String] -> [String]
+varTable [] x = x
+varTable ((Declare t s):ss) x = varTable ss  (s:x)
+varTable (s:ss) x = varTable ss x
 
 header :: String
-header = "; MAlice program for NASM on i386 Linux\n"
-         ++ "extern printf\n"
+header = "extern printf\n"
          ++ "section .text\n"
          ++ "global _start\n"   --Entry point
          ++ "_start:\n"
@@ -48,48 +58,57 @@ footer = "mov esp,ebp\n"        --Pop stack frame
          ++ "mov eax,1\n"       --Exit status and linux system call
          ++ "int 0x80\n"
 
+vars :: [Statement] -> String
+vars s = "section .bss\n" ++ concat [x ++ "\tresb\t4\n" | x <- var]
+    where
+        var = varTable s []
+
 strings :: [Statement] -> String
-strings s = "section .data\n"  ++ concat ["msg\tdb\t\"" ++ x ++ "\"\n"| (x,y) <- str] ++ "\nlen equ $ - msg"
+strings s = "section .data\n"  ++ concat ["string" ++ (show x) ++ "\tdb\t\"" ++ y ++ "\"\nlen" ++ (show x) ++ " equ $ - string" ++ (show x) ++ "\n" | (x,y) <- str]
   where
-    str = stringTable s []
+    str = stringTable s n []
+    n = [1..100]
 
 escapeS :: String -> String
 escapeS s = "\"" ++ escapeS' s ++ "\",0"
   where
     escapeS' [] = []
-    escapeS' (c : s')
-      | c `elem` escapedChars = "\"," ++ show (ord c) ++ ",\"" ++ escapeS' s'
+    escapeS' (c:s')
+      | c `elem` escaped = "\"," ++ show (ord c) ++ ",\"" ++ escapeS' s'
       | otherwise             = c : escapeS' s'
-    escapedChars = "\0\a\b\f\n\r\t\v\"\&\'\\"
-
+    escaped = "\0\a\b\f\n\r\t\v\"\&\'"
 
 codeGen :: [Statement] -> String -> String
-codeGen x y = codeGen' x x reg y
+codeGen x y = codeGen' x x reg vt st y
   where
-    codeGen' :: [Statement] -> [Statement] -> [Register] -> String -> String
-    codeGen' [] s' r p     = header ++ p ++ footer ++ (strings s')
-    codeGen' (s:ss) s' r p = codeGen' ss s' r (p ++ (codeGenS s r))
+    codeGen' :: [Statement] -> [Statement] -> [Register] -> VTab -> STab -> String -> String
+    codeGen' [] s' r v st p     = vars s' ++ header ++  p ++ footer ++ (strings s')
+    codeGen' (s:ss) s' r v st p = codeGen' ss s' r v st (p ++ (codeGenS s r vt st))
     reg = registers
+    vt = varTable x [] 
+    st = stringTable x n []
+    n = [1..100]
 
 codeGenJustStats :: [Statement] -> [Register] -> String -> String
 codeGenJustStats [] r p     = p
-codeGenJustStats (s:ss) r p = codeGenJustStats ss r (p ++ (codeGenS s r))
+codeGenJustStats (s:ss) r p = codeGenJustStats ss r (p ++ (codeGenS s r [] []))
 
-codeGenS :: Statement -> [Register] -> String
-codeGenS (Assign s e) (r:rs)             = "\npush a\n" ++ (codeGenE e rs) ++ "\npop a\n"
-codeGenS (Declare s v) (r:rs)            = ""
-codeGenS (Decr s) (r:rs)                 = "dec r\n"
-codeGenS (Incr s) (r:rs)                 = "inc r\n"
-codeGenS (Return s) (r:rs)               = "\n   ret"
-codeGenS (Print s) (r:r':r'':r''':rs)    = "mov edx,len\nmov ecx,msg\nmov ebx,1\nmov eax,4\nint 0x80\n"
-codeGenS (ReadIn s) (r:rs)               = ""
-codeGenS (Conditional c) (r:rs)          = ""
-codeGenS (WhileNot b stats) (r:rs)       = ""
-codeGenS (Function t s p stats) (r:rs)   = saveRegs [] ++ codeGenFunc (Function t s p stats) (r:rs) ++ restoreRegs []
-codeGenS (DeclareArray e t s) (r:rs)     = ""
-codeGenS (ArraySetElem s e e') (r:rs)    = ""
-codeGenS (Skip) (r:rs)                   = ""
-codeGenS (LExp e) (r:rs)                 = ""
+codeGenS :: Statement -> [Register] -> VTab -> STab -> String
+codeGenS (Assign s e) (r:rs) vt st            = "\npush a\n" ++ (codeGenE e rs) ++ "\npop a\n"
+codeGenS (Declare s v) (r:rs) vt st           = ""
+codeGenS (Decr s) (r:rs) vt st                = "dec r\n"
+codeGenS (Incr s) (r:rs) vt st                = "inc r\n"
+codeGenS (Return s) (r:rs) vt st              = "\n   ret"
+codeGenS (Print (String s)) (r:r':r'':r''':rs) vt st   = "mov edx,len" ++ show (sLookUp st s) ++ "\nmov ecx,string" ++ show (sLookUp st s) ++ "\nmov ebx,1\nmov eax,4\nint 0x80\n"
+codeGenS (Print s) (r:rs) vt st               = ""
+codeGenS (ReadIn s) (r:rs) vt st              = ""
+codeGenS (Conditional c) (r:rs) vt st         = ""
+codeGenS (WhileNot b stats) (r:rs) vt st      = ""
+codeGenS (Function t s p stats) (r:rs) vt st  = saveRegs [] ++ codeGenFunc (Function t s p stats) (r:rs) ++ restoreRegs []
+codeGenS (DeclareArray e t s) (r:rs) vt st    = ""
+codeGenS (ArraySetElem s e e') (r:rs) vt st   = ""
+codeGenS (Skip) (r:rs) vt st                  = ""
+codeGenS (LExp e) (r:rs) vt st                = ""
 
 codeGenE :: Exp -> [Register] -> String
 codeGenE (UnOpr c e) (r:rs)              = ""
@@ -121,7 +140,6 @@ codeGenB (Bool b) (r:rs)                = ""
 codeGenB (SBoolExpr e) (r:rs)           = ""
 codeGenB (DBoolExpr e o e') (r:rs)      = ""
 codeGenB (CBoolExpr b o b') (r:rs)      = ""
-
 
 fParams :: [Exp] -> [Register] -> String -> String
 fParams [] r s     = s
