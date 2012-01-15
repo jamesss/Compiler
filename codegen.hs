@@ -38,6 +38,10 @@ stringTable (s:ss) n x = stringTable ss n x
 sLookUp :: STab -> String -> Int
 sLookUp tab str = head [ i | (i,s) <- tab, s == str ]
 
+vLookUp :: VTab -> String -> String
+--all this does is verify that the var exists in the vt
+vLookUp tab str = head [ i | i <- tab, i == str ]
+
 varTable :: [Statement] -> [String] -> [String]
 varTable [] x = x
 varTable ((Declare t s):ss) x = varTable ss  (s:x)
@@ -59,12 +63,12 @@ footer = "mov esp,ebp\n"        --Pop stack frame
          ++ "int 0x80\n"
 
 vars :: [Statement] -> String
-vars s = "section .bss\n" ++ concat [x ++ "\tresb\t4\n" | x <- var]
+vars s = "section .bss\n" ++ "buffer\tresb\t1024\n" ++ concat [x ++ "\tresb\t4\n" | x <- var]
     where
         var = varTable s []
 
 strings :: [Statement] -> String
-strings s = "section .data\n"  ++ concat ["string" ++ (show x) ++ "\tdb\t\"" ++ y ++ "\"\nlen" ++ (show x) ++ " equ $ - string" ++ (show x) ++ "\n" | (x,y) <- str]
+strings s = "section .data\n"  ++ concat ["string" ++ (show x) ++ "\tdb\t\"" ++ (addNl y) ++ "\"\nlen" ++ (show x) ++ " equ $ - string" ++ (show x) ++ "\n" | (x,y) <- str]
   where
     str = stringTable s n []
     n = [1..100]
@@ -75,8 +79,16 @@ escapeS s = "\"" ++ escapeS' s ++ "\",0"
     escapeS' [] = []
     escapeS' (c:s')
       | c `elem` escaped = "\"," ++ show (ord c) ++ ",\"" ++ escapeS' s'
-      | otherwise             = c : escapeS' s'
-    escaped = "\0\a\b\f\n\r\t\v\"\&\'"
+      | otherwise             = (c:escapeS' s')
+    escaped = "\0\a\b\f\n\r\t\v\"\&\\\'"
+
+addNl :: String -> String
+addNl [] = []
+addNl (s:s':s'':ss)
+    | s == '\\' && s' == '\\' && s'' == 'n' = "\",0xa,\"" ++ (addNl ss)
+    | s == '\\' && s' == 'n' = "\",0xa,\"" ++ (addNl (s'':ss))
+    | otherwise = (s:(addNl (s':s'':ss)))
+addNl s  = s
 
 codeGen :: [Statement] -> String -> String
 codeGen x y = codeGen' x x reg vt st y
@@ -94,20 +106,20 @@ codeGenJustStats [] r p     = p
 codeGenJustStats (s:ss) r p = codeGenJustStats ss r (p ++ (codeGenS s r [] []))
 
 codeGenS :: Statement -> [Register] -> VTab -> STab -> String
-codeGenS (Assign s e) (r:rs) vt st            = "\npush a\n" ++ (codeGenE e rs) ++ "\npop a\n"
-codeGenS (Declare s v) (r:rs) vt st           = ""
-codeGenS (Decr s) (r:rs) vt st                = "dec r\n"
-codeGenS (Incr s) (r:rs) vt st                = "inc r\n"
-codeGenS (Return s) (r:rs) vt st              = "\n   ret"
+codeGenS (Assign s e) (r:rs) vt st            = "push " ++ register r ++ "\n mov " ++ register r ++ "," ++ (codeGenE e rs) ++ "\n"
+codeGenS (Declare s v) (r:rs) vt st           = "" -- vars are implicitly declared in .bss
+codeGenS (Decr s) (r:rs) vt st                = "dec" ++ vLookUp vt s ++ "\n"
+codeGenS (Incr s) (r:rs) vt st                = "inc" ++ vLookUp vt s ++ "\n"
+codeGenS (Return s) (r:rs) vt st              = "ret \n"
 codeGenS (Print (String s)) (r:r':r'':r''':rs) vt st   = "mov edx,len" ++ show (sLookUp st s) ++ "\nmov ecx,string" ++ show (sLookUp st s) ++ "\nmov ebx,1\nmov eax,4\nint 0x80\n"
 codeGenS (Print s) (r:rs) vt st               = ""
-codeGenS (ReadIn s) (r:rs) vt st              = ""
-codeGenS (Conditional c) (r:rs) vt st         = ""
+codeGenS (ReadIn s) (r:rs) vt st              = "mov edx,1023\nmov ecx,buffer\nmov ebx,0\nmov eax,4\nint 0x80\n"
+codeGenS (Conditional c) (r:rs) vt st         = saveRegs (r:rs) ++ codeGenCond c (r:rs) vt st
 codeGenS (WhileNot b stats) (r:rs) vt st      = ""
-codeGenS (Function t s p stats) (r:rs) vt st  = saveRegs [] ++ codeGenFunc (Function t s p stats) (r:rs) ++ restoreRegs []
-codeGenS (DeclareArray e t s) (r:rs) vt st    = ""
+codeGenS (Function t s p stats) (r:rs) vt st  = saveRegs (r:rs) ++ codeGenFunc (Function t s p stats) (r:rs) ++ restoreRegs (r:rs)
+codeGenS (DeclareArray e t s) (r:rs) vt st    = "" -- vars are implicitly declared in .bss
 codeGenS (ArraySetElem s e e') (r:rs) vt st   = ""
-codeGenS (Skip) (r:rs) vt st                  = ""
+codeGenS (Skip) (r:rs) vt st                  = "" --Skip is a dummy instruction for comments
 codeGenS (LExp e) (r:rs) vt st                = ""
 
 codeGenE :: Exp -> [Register] -> String
@@ -121,8 +133,8 @@ codeGenE (BinOpr '*' e e') (r:r':rs)     = "mov eax," ++ codeGenE e rs ++ "mov e
 codeGenE (BinOpr '/' e e') (r:r':rs)     = "mov eax," ++ codeGenE e rs ++ "mov ebx," ++ codeGenE e' rs ++ "div eax, ebx\n" 
 codeGenE (BinOpr c e e') (r:rs)          = ""
 codeGenE (DBinOpr s e e') (r:rs)         = ""
-codeGenE (Int i) (r:rs)                  = " $" ++ show i ++ "\n"
-codeGenE (Char c) (r:rs)                 = " $" ++ show c ++ "\n"
+codeGenE (Int i) (r:rs)                  = show i ++ "\n"
+codeGenE (Char c) (r:rs)                 = show c ++ "\n"
 codeGenE (String s) (r:rs)               = ""
 codeGenE (Var s) (r:rs)                  = ""
 codeGenE (ArrayGetElem s e) (r:rs)       = ""
@@ -144,3 +156,10 @@ codeGenB (CBoolExpr b o b') (r:rs)      = ""
 fParams :: [Exp] -> [Register] -> String -> String
 fParams [] r s     = s
 fParams (p:pp) r s = fParams pp r ((codeGenE p r) ++ s)
+
+codeGenCond :: Conditional -> [Register] -> VTab -> STab -> String
+codeGenCond (If b s) (r:rs) vt st         = "push " ++ register r ++ "cond:\n"
+codeGenCond (IfE b s c) (r:rs) vt st      = ""
+codeGenCond (ElseIf b s) (r:rs) vt st     = ""
+codeGenCond (ElseIfE b s c) (r:rs) vt st  = ""
+codeGenCond (Else s) (r:rs) vt st         = ""

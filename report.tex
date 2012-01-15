@@ -13,9 +13,9 @@
 \maketitle
 
 \section{The Product}
-Our compiler takes a MAlice program as input, tokenises it, converts it into an intermediate form and produces Intel IA-32 assembly code. It then assembles this to form an executable for the Intel platform after linking it with the \tt cstdio.h \rm library.
+Our compiler takes a MAlice program as input, tokenises it, converts it into an intermediate form and produces NASM assembly code for Linux. It then assembles this to form an executable for the Intel platform after linking it with the \tt cstdio.h \rm library.
 
-We deduced the language specifications by using the examples provided, by testing our own code and of course by making use of our programming skills and intuition.
+We deduced the language specifications by using the examples provided, by testing our own code and by making use of our programming skills and intuition.
 
 \section{The Design Choices}
 
@@ -28,27 +28,28 @@ To generate the Lexer and Parser, we used \sl Happy \rm and \sl Alex \rm for Has
 \subsection{Type Checking}
 Our compiler checks for undefined variables, multiple declarations within the same scope of a variable, as well as assignment of an incorrect type to a declared variable. For this it makes use of a symbol table and assumes that a variable, once declared, is in scope for the rest of the program, but not inside a function declaration. These are of course considered separately and any variable declared here is only in scope within the body of the function.
 
-Inside the main file, the buildSymbolTable creates a symbol table and does all the type checking at compile time. 
+In \tt main.hs\rm, \tt buildSymbolTable \rm creates a symbol table and does all the type checking at compile time. 
 
 \subsection{Code Generation}
 The compiler uses the intermediate representation which is output by the parser in order to generate assembly code. We originally planned to use the LLVM bindings for Haskell to generate LLVM IR code which could then be compiled by the LLVM compiler but we decided that generating assembly code would be more useful in terms of the educational aims of the exercise.
 
-Functions such as reading data from the console are accomplished by using the \tt stdio.h \rm C library of assembly functions which is linked with the MAlice assembly by the \tt compile \rm command.
+Functions such as reading data from the console were originally to be accomplished by using the \tt stdio.h \rm C library of assembly functions which is linked with the MAlice assembly by the \tt compile \rm command. We found it more straightforward to use Linux system calls to read and write to and from the console.
+
+The compiler scans the input program for literal strings, which are then stored in the \tt .data \rm portion of the assembly code, and variable names, which are initialised in the \tt .bss \rm section for run-time use. The string table and variable table are kept during compilation so that the compiler can verify that they exist and find the assembly identifier for each string.
 
 \subsection{Operation}
-The compiler is operated by a bash script which takes the input \tt .alice \rm file as its only argument. This script is run by the command \tt ./compile\rm .
+The compiler is operated by a bash script which takes the input \tt .alice \rm file as its only argument. This script is run by the command \tt ./compile <filename>\rm .
 
 \section{Retrospection}
 If we were going to do this exercise again I would have used Haskell from the beginning, or at least abandoned Milestone II, as this caused a severe delay in getting started with Milestone III - the largest part of the exercise. Furthermore we would have liked a third group member so that we could have been able to compete more fairly with larger groups.
 
 \section{Limitations \& Further Development}
-In order to meet the deadline we had to focus on main features, but there are a few aspects which we would have liked to improve on:
+In order to meet the deadline we had to focus on main features, but there are a few aspects which we would have liked to:
 
 \begin{itemize}
-\item Optimisation must be implemented for register allocation
-\item Compile and run the generated Assembly code
+\item Implement optimisation for register allocation
 \item Increase the number of errors caught at compile time
-\item Add restrictions to the BNF
+\item Add more restrictions to the BNF
 \end{itemize}
 
 \end{document}
